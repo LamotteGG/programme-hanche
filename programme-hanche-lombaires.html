@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programme Hanche & Lombaires</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0c0c0c; font-family: Georgia, serif; color: #fff; padding-bottom: 80px; }
+
+header {
+  background: linear-gradient(160deg, #0f0f1a, #0a1628);
+  padding: 32px 20px 24px;
+  text-align: center;
+  border-bottom: 1px solid #ffffff12;
+}
+.badge {
+  background: #e8c547; color: #000; font-size: 10px; letter-spacing: 3px;
+  padding: 4px 16px; font-family: monospace; border-radius: 2px;
+  display: inline-block; margin-bottom: 14px;
+}
+h1 { font-size: clamp(18px, 3vw, 30px); font-weight: 400; margin-bottom: 6px; }
+.subtitle { color: #667788; font-style: italic; font-size: 13px; margin-bottom: 20px; }
+
+.save-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #0a2a0f; border: 1px solid #43A04750;
+  border-radius: 100px; padding: 4px 12px;
+  font-size: 11px; color: #43A047; font-family: monospace;
+  margin-bottom: 16px;
+}
+
+.gp-wrap { max-width: 480px; margin: 0 auto; }
+.gp-row { display: flex; justify-content: space-between; font-size: 12px; color: #667788; margin-bottom: 6px; }
+.gp-bar { background: #ffffff12; border-radius: 4px; height: 6px; }
+.gp-fill { height: 100%; background: linear-gradient(90deg, #e8c547, #ff8c42); border-radius: 4px; transition: width 0.5s; }
+
+.save-indicator {
+  font-size: 11px; color: #43A047; font-family: monospace;
+  margin-top: 10px; opacity: 0; transition: opacity 0.4s;
+}
+.save-indicator.show { opacity: 1; }
+
+/* NAV */
+.week-nav { max-width: 760px; margin: 24px auto 0; padding: 0 16px; }
+.nav-title { color: #445566; font-size: 10px; font-family: monospace; letter-spacing: 2px; text-align: center; margin-bottom: 12px; }
+.week-tabs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.wtab {
+  flex-shrink: 0; padding: 10px 16px; border-radius: 12px;
+  border: 1px solid #ffffff15; background: #141414;
+  cursor: pointer; text-align: center; min-width: 82px;
+  transition: all 0.2s; user-select: none;
+}
+.wtab:hover { border-color: #ffffff35; background: #1a1a1a; }
+.wtab.active { border-color: #e8c547; background: #1a1500; }
+.wtab.wdone { border-color: #43A04780; background: #0a1a0a; }
+.wtab-num { font-size: 10px; color: #667788; font-family: monospace; letter-spacing: 1px; margin-bottom: 3px; }
+.wtab.active .wtab-num { color: #e8c547; }
+.wtab.wdone .wtab-num { color: #43A047; }
+.wtab-label { font-size: 12px; color: #aabbcc; }
+.wtab.active .wtab-label { color: #fff; font-weight: 600; }
+.wtab-dots { display: flex; gap: 4px; justify-content: center; margin-top: 6px; }
+.wdot { width: 7px; height: 7px; border-radius: 50%; background: #ffffff15; transition: background 0.3s; }
+.wdot.sdone { background: #43A047; }
+.wdot.sactive { background: #e8c547; }
+
+/* CONTENT */
+.content { max-width: 760px; margin: 20px auto 0; padding: 0 16px; }
+
+.week-header {
+  background: #141414; border: 1px solid #ffffff12;
+  border-radius: 16px; padding: 22px; margin-bottom: 16px;
+}
+.wh-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.wh-title { font-size: 18px; font-weight: 400; }
+.phase-tag { font-size: 10px; font-family: monospace; letter-spacing: 1px; padding: 4px 12px; border-radius: 100px; }
+.wh-desc { color: #778899; font-size: 13px; line-height: 1.7; margin-bottom: 14px; }
+.wh-prog-row { display: flex; justify-content: space-between; font-size: 12px; color: #667788; margin-bottom: 6px; }
+.wh-bar { background: #ffffff10; border-radius: 4px; height: 4px; }
+.wh-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+
+.stabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.stab {
+  padding: 7px 20px; border-radius: 100px;
+  border: 1px solid #ffffff18; background: transparent;
+  color: #667788; font-size: 13px; cursor: pointer;
+  font-family: Georgia, serif; transition: all 0.2s;
+}
+.stab:hover { border-color: #ffffff35; color: #aabbcc; }
+.stab.sactive { border-color: #e8c547; color: #e8c547; background: #1a1500; }
+.stab.sdone:not(.sactive) { border-color: #43A04780; color: #43A047; background: #0a1a0a; }
+
+/* CARDS */
+.cards { display: flex; flex-direction: column; gap: 10px; }
+.card {
+  background: #141414; border: 1px solid #ffffff12;
+  border-radius: 14px; overflow: hidden; transition: border-color 0.2s, opacity 0.2s;
+}
+.card.done { opacity: 0.55; background: #0f1a0f; }
+.card-head {
+  padding: 16px 18px; cursor: pointer;
+  display: flex; align-items: center; gap: 14px;
+}
+.card-head:hover { background: #1a1a1a; }
+.cdot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.cinfo { flex: 1; min-width: 0; }
+.ctitle { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+.cname { font-size: 15px; font-weight: 600; }
+.csub { color: #445566; font-size: 13px; font-style: italic; }
+.clvl { font-size: 9px; padding: 2px 9px; border-radius: 100px; font-family: monospace; letter-spacing: 1px; }
+.cmeta { display: flex; gap: 14px; flex-wrap: wrap; }
+.cmeta span { color: #556677; font-size: 12px; }
+.cactions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.checkbtn {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid #ffffff25; background: transparent;
+  color: #fff; font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.checkbtn:hover { border-color: #43A047; }
+.checkbtn.checked { background: #43A047; border-color: #43A047; }
+.arrow { color: #445566; font-size: 16px; transition: transform 0.25s; display: inline-block; flex-shrink: 0; }
+.arrow.open { transform: rotate(180deg); }
+
+.card-body { padding: 0 18px 18px; border-top: 1px solid #ffffff08; display: none; }
+.card-body.open { display: block; }
+.tags { display: flex; gap: 7px; margin: 14px 0 12px; flex-wrap: wrap; }
+.tag { font-size: 12px; padding: 3px 12px; border-radius: 100px; }
+.cdesc { color: #99aabb; font-size: 14px; line-height: 1.8; margin-bottom: 14px; }
+.tip-box {
+  background: #1a160a; border: 1px solid #e8c54722;
+  border-radius: 10px; padding: 12px 15px; margin-bottom: 11px;
+}
+.tip-label { color: #e8c547; font-size: 10px; font-family: monospace; letter-spacing: 1px; }
+.tip-text { color: #bbaa88; font-size: 13px; }
+.warn-box {
+  background: #1a0a0a; border: 1px solid #ff4d4d18;
+  border-radius: 10px; padding: 11px 15px;
+}
+.warn-label { color: #ff7766; font-size: 10px; font-family: monospace; letter-spacing: 1px; }
+.warn-text { color: #997777; font-size: 13px; }
+
+/* BANNER */
+.done-banner {
+  background: #0a2a0f; border: 1px solid #43A04760;
+  border-radius: 14px; padding: 24px; text-align: center;
+  margin-top: 16px; display: none;
+}
+.done-banner.show { display: block; }
+.banner-icon { font-size: 36px; margin-bottom: 10px; }
+.banner-title { font-size: 17px; color: #66cc77; margin-bottom: 6px; }
+.banner-sub { font-size: 13px; color: #446644; margin-bottom: 14px; }
+.next-btn {
+  padding: 10px 26px; background: #43A047; color: #fff;
+  border: none; border-radius: 100px; font-size: 13px;
+  cursor: pointer; font-family: Georgia, serif; transition: background 0.2s;
+}
+.next-btn:hover { background: #2e7d32; }
+
+/* FOOTER */
+.footer { max-width: 760px; margin: 24px auto 0; padding: 0 16px; }
+.footer-box {
+  background: #0f0f1a; border: 1px solid #ffffff10;
+  border-radius: 14px; padding: 16px 22px;
+  text-align: center; color: #445566; font-size: 12px; line-height: 1.9;
+}
+
+.reset-area { text-align: center; margin-top: 16px; }
+.reset-btn {
+  background: transparent; color: #334455;
+  border: 1px solid #334455; border-radius: 100px;
+  padding: 7px 20px; font-size: 11px; cursor: pointer;
+  font-family: Georgia, serif; transition: all 0.2s;
+}
+.reset-btn:hover { color: #ff7766; border-color: #ff7766; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">PROGRAMME THERAPEUTIQUE</div>
+  <h1>Hanche &middot; Fessiers &middot; Lombaires</h1>
+  <p class="subtitle">6 semaines &middot; 3 seances / semaine &middot; Progression progressive</p>
+  <div class="save-badge">&#128190; Progression sauvegardee automatiquement</div>
+  <div class="gp-wrap">
+    <div class="gp-row">
+      <span id="gp-label">Progression globale</span>
+      <span id="gp-pct" style="color:#e8c547">0%</span>
+    </div>
+    <div class="gp-bar"><div class="gp-fill" id="gp-fill" style="width:0%"></div></div>
+  </div>
+  <div class="save-indicator" id="save-ind">&#10003; Sauvegarde</div>
+</header>
+
+<div class="week-nav">
+  <div class="nav-title">CHOISIR UNE SEMAINE</div>
+  <div class="week-tabs" id="week-tabs"></div>
+</div>
+
+<div class="content" id="content"></div>
+
+<div class="footer">
+  <div class="footer-box">
+    Arretez tout exercice en cas de douleur a l'aine.<br>
+    <span style="color:#e8c547">Ce programme ne remplace pas un suivi medical.</span>
+  </div>
+  <div class="reset-area">
+    <button class="reset-btn" onclick="resetAll()">Reinitialiser la progression</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DONNEES
+// ============================================================
+var EXOS = {
+  pontFessier:{dot:"#FF8C00",bg:"#2a1f0a",border:"#FF8C00",tc:"#ffaa44",nom:"Pont fessier",sub:"Glute Bridge",niv:"Debutant",nBg:"#0a2a0f",nC:"#66cc77",muscles:["Fessiers","Lombaires","Ischio-jambiers"],desc:"Allonge sur le dos, pieds a plat, genoux flechis. Poussez le bassin vers le haut en contractant les fessiers. Tenez 2 secondes en haut, redescendez lentement.",tip:"Serrez fort les fessiers en haut du mouvement.",warn:"Mouvement lent et controle. Pas de douleur a la hanche."},
+  clamshell:{dot:"#FF8C00",bg:"#2a1f0a",border:"#FF8C00",tc:"#ffaa44",nom:"Clamshell",sub:"Abduction laterale",niv:"Debutant",nBg:"#0a2a0f",nC:"#66cc77",muscles:["Fessier moyen","Rotateurs externes"],desc:"Allonge sur le cote, genoux flechis a 90 degres. Ouvrez le genou superieur vers le plafond comme un coquillage. Redescendez lentement.",tip:"Si trop facile, ajoutez un elastique au-dessus des genoux.",warn:"Ne pas faire pivoter le bassin. Mouvement isole de la hanche."},
+  birdDog:{dot:"#43A047",bg:"#0a2a0f",border:"#43A047",tc:"#66cc77",nom:"Bird Dog",sub:"Chien-oiseau",niv:"Debutant",nBg:"#0a2a0f",nC:"#66cc77",muscles:["Erecteurs du rachis","Fessiers","Stabilisateurs profonds"],desc:"A quatre pattes, dos plat. Etendez simultanement le bras droit et la jambe gauche. Maintenez 3 secondes. Revenez et alternez. La hanche reste parallele au sol.",tip:"Imaginez tenir un verre d'eau sur votre dos, ne renversez pas une goutte.",warn:"Mouvement tres lent. Ne pas cambrer les lombaires."},
+  piriforme:{dot:"#1E88E5",bg:"#0a1a2a",border:"#1E88E5",tc:"#55aaff",nom:"Etirement piriforme",sub:"Figure 4",niv:"Debutant",nBg:"#0a2a0f",nC:"#66cc77",muscles:["Piriforme","Rotateurs externes"],desc:"Allonge sur le dos, croisez la cheville droite sur le genou gauche. Attrapez l'arriere de la cuisse gauche et tirez doucement vers vous. Sentez l'etirement dans la fesse droite.",tip:"Respirez profondement et relâchez 5% de tension a chaque expiration.",warn:"Douceur absolue. Arretez si douleur a l'aine ou sciatique."},
+  deadlift:{dot:"#E91E63",bg:"#2a0a15",border:"#E91E63",tc:"#ff6699",nom:"Souleve de terre roumain",sub:"Romanian Deadlift",niv:"Intermediaire",nBg:"#2a2000",nC:"#ccaa33",muscles:["Fessiers","Ischio-jambiers","Erecteurs du rachis"],desc:"Debout, pieds largeur hanches. Poussez les hanches vers l'arriere en descendant les mains le long des jambes. Sentez l'etirement. Remontez en poussant les hanches vers l'avant.",tip:"Pensez a fermer la fermeture eclair en remontant, hanches vers l'avant.",warn:"Arretez si douleur a la hanche ou a l'aine. Dos plat obligatoire."},
+  fente:{dot:"#E91E63",bg:"#2a0a15",border:"#E91E63",tc:"#ff6699",nom:"Fente stationnaire",sub:"Split Squat",niv:"Intermediaire",nBg:"#2a2000",nC:"#ccaa33",muscles:["Fessiers","Quadriceps","Stabilisateurs hanche"],desc:"Un pied devant, l'autre derriere. Descendez le genou arriere vers le sol, torse droit. Le genou avant ne depasse pas la pointe du pied.",tip:"Commencez cote gauche avant le cote droit.",warn:"Commencez sans charge. Evitez si douleur a l'aine droite."},
+  gainage:{dot:"#E91E63",bg:"#2a0a15",border:"#E91E63",tc:"#ff6699",nom:"Gainage lateral",sub:"Side Plank",niv:"Intermediaire",nBg:"#2a2000",nC:"#ccaa33",muscles:["Obliques","Fessier moyen","Carre des lombes"],desc:"Sur le cote, appui sur l'avant-bras et le pied. Corps en ligne droite. Levez le bassin et maintenez la position.",tip:"Poussez la hanche vers le plafond, ne laissez pas le bassin s'affaisser.",warn:"Modifie sur genou si trop difficile. Pas de compensation lombaire."},
+  pallof:{dot:"#43A047",bg:"#0a2a0f",border:"#43A047",tc:"#66cc77",nom:"Gainage anti-rotation",sub:"Pallof Press",niv:"Intermediaire",nBg:"#2a2000",nC:"#ccaa33",muscles:["Obliques","Transverse","Stabilisateurs lombaires"],desc:"Debout de cote face a un point d'ancrage (elastique). Poussez les mains devant vous et revenez lentement. Le tronc ne doit pas tourner.",tip:"Augmentez la resistance progressivement.",warn:"Sans elastique au debut. Resistez a toute rotation du tronc."},
+  pontUnijambiste:{dot:"#FF8C00",bg:"#2a1f0a",border:"#FF8C00",tc:"#ffaa44",nom:"Pont fessier unijambiste",sub:"Single-leg Glute Bridge",niv:"Intermediaire",nBg:"#2a2000",nC:"#ccaa33",muscles:["Fessiers","Stabilisateurs hanche","Lombaires"],desc:"Comme le pont classique, mais une jambe tendue vers le plafond. Montez le bassin en poussant sur le pied au sol uniquement. Tenez 2 secondes en haut.",tip:"Commencez cote gauche, introduisez le cote droit prudemment.",warn:"Arretez si douleur a l'aine. Progressez depuis le pont bilateral."},
+  clamshellElastique:{dot:"#FF8C00",bg:"#2a1f0a",border:"#FF8C00",tc:"#ffaa44",nom:"Clamshell avec elastique",sub:"Banded Clamshell",niv:"Intermediaire",nBg:"#2a2000",nC:"#ccaa33",muscles:["Fessier moyen","Rotateurs externes"],desc:"Meme mouvement que le clamshell, avec un elastique de resistance legere au-dessus des genoux. Controllez bien le retour.",tip:"Resistance legere au debut, augmentez progressivement.",warn:"Ne compensez pas en pivotant le bassin."},
+  squat:{dot:"#E91E63",bg:"#2a0a15",border:"#E91E63",tc:"#ff6699",nom:"Squat goblet",sub:"Goblet Squat",niv:"Intermediaire",nBg:"#2a2000",nC:"#ccaa33",muscles:["Fessiers","Quadriceps","Adducteurs"],desc:"Debout, pieds largeur epaules, tenez un poids leger contre la poitrine. Descendez en gardant les genoux dans l'axe des pieds. Remontez en serrant les fessiers.",tip:"Poussez les genoux vers l'exterieur en descendant.",warn:"Sans poids au debut. Evitez si douleur a l'aine."},
+  etirementHanche:{dot:"#1E88E5",bg:"#0a1a2a",border:"#1E88E5",tc:"#55aaff",nom:"Etirement flechisseur hanche",sub:"Hip Flexor Stretch",niv:"Debutant",nBg:"#0a2a0f",nC:"#66cc77",muscles:["Psoas","Droit anterieur","Flechisseurs hanche"],desc:"En fente basse, genou arriere au sol. Poussez le bassin vers l'avant et le bas. Bras leve du cote arriere pour accentuer l'etirement.",tip:"Contractez le fessier arriere pour augmenter l'etirement du psoas.",warn:"Pas de douleur dans l'aine. Mouvement doux et progressif."},
+  pompeHanche:{dot:"#FF8C00",bg:"#2a1f0a",border:"#FF8C00",tc:"#ffaa44",nom:"Mobilisation hanche 90-90",sub:"Hip 90/90",niv:"Debutant",nBg:"#0a2a0f",nC:"#66cc77",muscles:["Rotateurs hanche","Piriforme","Fessiers"],desc:"Assis au sol, une jambe devant a 90 degres, l'autre sur le cote a 90 degres. Penchez-vous doucement vers la jambe avant. Alternez les cotes.",tip:"Restez droit dans le dos, la flexion vient de la hanche.",warn:"Arretez si douleur a l'aine. Mobilite douce uniquement."}
+};
+
+var SEMAINES = [
+  {num:1,label:"Eveil",phaseTag:"Activation",ptBg:"#1a1500",ptC:"#e8c547",ptBo:"#e8c54740",barC:"#e8c547",
+   desc:"Reveiller les muscles stabilisateurs sans douleur. Focus sur la qualite du mouvement.",
+   seances:[
+    {label:"A",exos:[{e:"pontFessier",s:"3x12",r:"12 rep.",p:"45s"},{e:"clamshell",s:"3x15",r:"15 rep.",p:"45s"},{e:"birdDog",s:"3x8",r:"8/cote",p:"45s"},{e:"piriforme",s:"2x40s",r:"40s/cote",p:"—"}]},
+    {label:"B",exos:[{e:"pontFessier",s:"3x12",r:"12 rep.",p:"45s"},{e:"pompeHanche",s:"2x30s",r:"30s/cote",p:"—"},{e:"birdDog",s:"3x8",r:"8/cote",p:"45s"},{e:"piriforme",s:"2x40s",r:"40s/cote",p:"—"}]},
+    {label:"C",exos:[{e:"clamshell",s:"3x15",r:"15 rep.",p:"45s"},{e:"pontFessier",s:"3x15",r:"15 rep.",p:"45s"},{e:"birdDog",s:"3x10",r:"10/cote",p:"45s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]}
+  ]},
+  {num:2,label:"Consolidation",phaseTag:"Activation",ptBg:"#1a1500",ptC:"#e8c547",ptBo:"#e8c54740",barC:"#e8c547",
+   desc:"Memes exercices avec volume augmente. Verifiez l'absence de douleur avant de progresser.",
+   seances:[
+    {label:"A",exos:[{e:"pontFessier",s:"3x15",r:"15 rep.",p:"45s"},{e:"clamshell",s:"3x20",r:"20 rep.",p:"45s"},{e:"birdDog",s:"3x10",r:"10/cote",p:"45s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]},
+    {label:"B",exos:[{e:"clamshellElastique",s:"3x15",r:"15 rep.",p:"45s"},{e:"pontFessier",s:"3x15",r:"15 rep.",p:"45s"},{e:"birdDog",s:"3x10",r:"10/cote",p:"45s"},{e:"pompeHanche",s:"2x40s",r:"40s/cote",p:"—"}]},
+    {label:"C",exos:[{e:"pontFessier",s:"4x15",r:"15 rep.",p:"45s"},{e:"clamshell",s:"3x20",r:"20 rep.",p:"45s"},{e:"birdDog",s:"3x12",r:"12/cote",p:"45s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]}
+  ]},
+  {num:3,label:"Renforcement",phaseTag:"Toutes phases",ptBg:"#1a0a15",ptC:"#ff6699",ptBo:"#E91E6340",barC:"#E91E63",
+   desc:"Introduction du renforcement. Commencez sans charge, priorite a la technique. Surveillez la hanche droite.",
+   seances:[
+    {label:"A",exos:[{e:"pontFessier",s:"3x15",r:"15 rep.",p:"45s"},{e:"deadlift",s:"3x10",r:"10 rep.",p:"60s"},{e:"birdDog",s:"3x10",r:"10/cote",p:"45s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]},
+    {label:"B",exos:[{e:"clamshellElastique",s:"3x15",r:"15 rep.",p:"45s"},{e:"fente",s:"3x8",r:"8/jambe",p:"60s"},{e:"gainage",s:"3x25s",r:"25s/cote",p:"45s"},{e:"etirementHanche",s:"2x40s",r:"40s/cote",p:"—"}]},
+    {label:"C",exos:[{e:"pontFessier",s:"3x15",r:"15 rep.",p:"45s"},{e:"deadlift",s:"3x12",r:"12 rep.",p:"60s"},{e:"pallof",s:"3x10",r:"10/cote",p:"45s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]}
+  ]},
+  {num:4,label:"Progression",phaseTag:"Toutes phases",ptBg:"#1a0a15",ptC:"#ff6699",ptBo:"#E91E6340",barC:"#E91E63",
+   desc:"Augmentation du volume. Ajoutez une legere charge si les exercices sont trop faciles et sans douleur.",
+   seances:[
+    {label:"A",exos:[{e:"pontUnijambiste",s:"3x10",r:"10/cote",p:"60s"},{e:"deadlift",s:"3x12",r:"12 rep.",p:"60s"},{e:"birdDog",s:"3x12",r:"12/cote",p:"45s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]},
+    {label:"B",exos:[{e:"squat",s:"3x12",r:"12 rep.",p:"60s"},{e:"fente",s:"3x10",r:"10/jambe",p:"60s"},{e:"gainage",s:"3x30s",r:"30s/cote",p:"45s"},{e:"etirementHanche",s:"2x45s",r:"45s/cote",p:"—"}]},
+    {label:"C",exos:[{e:"pontUnijambiste",s:"3x10",r:"10/cote",p:"60s"},{e:"deadlift",s:"4x10",r:"10 rep.",p:"60s"},{e:"pallof",s:"3x12",r:"12/cote",p:"45s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]}
+  ]},
+  {num:5,label:"Intensite",phaseTag:"Renforcement+",ptBg:"#0a0a2a",ptC:"#55aaff",ptBo:"#1E88E540",barC:"#1E88E5",
+   desc:"Exercices plus exigeants avec charge moderee. Si douleurs, revenez en semaine 3-4.",
+   seances:[
+    {label:"A",exos:[{e:"pontUnijambiste",s:"4x10",r:"10/cote",p:"60s"},{e:"deadlift",s:"4x10",r:"10 rep. charge",p:"75s"},{e:"birdDog",s:"3x12",r:"12/cote",p:"45s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]},
+    {label:"B",exos:[{e:"squat",s:"4x12",r:"12 rep. charge",p:"75s"},{e:"fente",s:"3x12",r:"12/jambe",p:"60s"},{e:"gainage",s:"3x35s",r:"35s/cote",p:"45s"},{e:"etirementHanche",s:"2x45s",r:"45s/cote",p:"—"}]},
+    {label:"C",exos:[{e:"clamshellElastique",s:"3x20",r:"20 rep.",p:"45s"},{e:"pallof",s:"3x12",r:"12/cote",p:"45s"},{e:"deadlift",s:"3x12",r:"12 rep.",p:"60s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]}
+  ]},
+  {num:6,label:"Bilan",phaseTag:"Entretien",ptBg:"#0a2a0f",ptC:"#66cc77",ptBo:"#43A04740",barC:"#43A047",
+   desc:"Semaine de consolidation. Evaluez vos progres et preparez un programme d'entretien long terme.",
+   seances:[
+    {label:"A",exos:[{e:"pontUnijambiste",s:"3x12",r:"12/cote",p:"60s"},{e:"deadlift",s:"3x12",r:"12 rep.",p:"60s"},{e:"birdDog",s:"3x12",r:"12/cote",p:"45s"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]},
+    {label:"B",exos:[{e:"squat",s:"3x12",r:"12 rep.",p:"60s"},{e:"fente",s:"3x10",r:"10/jambe",p:"60s"},{e:"gainage",s:"3x40s",r:"40s/cote",p:"45s"},{e:"etirementHanche",s:"2x45s",r:"45s/cote",p:"—"}]},
+    {label:"C",exos:[{e:"pontFessier",s:"3x15",r:"15 rep.",p:"45s"},{e:"pallof",s:"3x12",r:"12/cote",p:"45s"},{e:"pompeHanche",s:"2x45s",r:"45s/cote",p:"—"},{e:"piriforme",s:"2x45s",r:"45s/cote",p:"—"}]}
+  ]}
+];
+
+// ============================================================
+// ETAT & PERSISTANCE
+// ============================================================
+var STORAGE_KEY = "programme_hanche_v2";
+var state = { sem: 0, seq: 0, completed: {} };
+var openCard = null;
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    var el = document.getElementById("save-ind");
+    el.classList.add("show");
+    clearTimeout(el._t);
+    el._t = setTimeout(function(){ el.classList.remove("show"); }, 2000);
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      var d = JSON.parse(raw);
+      state.sem = d.sem || 0;
+      state.seq = d.seq || 0;
+      state.completed = d.completed || {};
+    }
+  } catch(e) {}
+}
+
+function resetAll() {
+  if (confirm("Reinitialiser toute la progression ?")) {
+    state = { sem: 0, seq: 0, completed: {} };
+    openCard = null;
+    saveState();
+    render();
+  }
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function ck(s,q,eid) { return s+"|"+q+"|"+eid; }
+function isDone(s,q,eid) { return !!state.completed[ck(s,q,eid)]; }
+function seqDone(s,q) { return SEMAINES[s].seances[q].exos.filter(function(e){ return isDone(s,q,e.e); }).length; }
+function seqFull(s,q) { return seqDone(s,q) === SEMAINES[s].seances[q].exos.length; }
+function semFull(s) { for(var i=0;i<SEMAINES[s].seances.length;i++){ if(!seqFull(s,i)) return false; } return true; }
+function semTotal(s) { var t=0; for(var i=0;i<SEMAINES[s].seances.length;i++) t+=SEMAINES[s].seances[i].exos.length; return t; }
+function semDoneCount(s) { var t=0; for(var i=0;i<SEMAINES[s].seances.length;i++) t+=seqDone(s,i); return t; }
+function allTotal() { var t=0; for(var i=0;i<SEMAINES.length;i++) t+=semTotal(i); return t; }
+function allDone() { var t=0; for(var i=0;i<SEMAINES.length;i++) t+=semDoneCount(i); return t; }
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  renderHeader();
+  renderTabs();
+  renderContent();
+}
+
+function renderHeader() {
+  var total = allTotal(), done = allDone();
+  var pct = Math.round(done/total*100);
+  document.getElementById("gp-label").textContent = done+"/"+total+" exercices completes";
+  document.getElementById("gp-pct").textContent = pct+"%";
+  document.getElementById("gp-fill").style.width = pct+"%";
+}
+
+function renderTabs() {
+  var html = "";
+  for (var i=0; i<SEMAINES.length; i++) {
+    var s = SEMAINES[i];
+    var full = semFull(i);
+    var act = state.sem === i;
+    var cls = "wtab"+(act?" active":"")+(full?" wdone":"");
+    var dots = "";
+    for (var j=0; j<s.seances.length; j++) {
+      var dc = "wdot"+(seqFull(i,j)?" sdone":(act&&state.seq===j?" sactive":""));
+      dots += '<div class="'+dc+'"></div>';
+    }
+    html += '<div class="'+cls+'" onclick="selSem('+i+')">';
+    html += '<div class="wtab-num">'+(full?"&#10003; ":" ")+"S"+s.num+'</div>';
+    html += '<div class="wtab-label">'+s.label+'</div>';
+    html += '<div class="wtab-dots">'+dots+'</div>';
+    html += '</div>';
+  }
+  document.getElementById("week-tabs").innerHTML = html;
+}
+
+function renderContent() {
+  var s = state.sem;
+  var sem = SEMAINES[s];
+  var q = state.seq;
+  var seance = sem.seances[q];
+  var sd = semDoneCount(s), st = semTotal(s);
+  var wpct = Math.round(sd/st*100);
+  var html = "";
+
+  // Week header
+  html += '<div class="week-header">';
+  html += '<div class="wh-top">';
+  html += '<span class="wh-title">Semaine '+sem.num+' &mdash; '+sem.label+'</span>';
+  html += '<span class="phase-tag" style="background:'+sem.ptBg+';color:'+sem.ptC+';border:1px solid '+sem.ptBo+'">'+sem.phaseTag+'</span>';
+  html += '</div>';
+  html += '<p class="wh-desc">'+sem.desc+'</p>';
+  html += '<div class="wh-prog-row"><span>'+sd+'/'+st+' exercices cette semaine</span><span style="color:'+sem.barC+'">'+wpct+'%</span></div>';
+  html += '<div class="wh-bar"><div class="wh-fill" style="width:'+wpct+'%;background:'+sem.barC+'"></div></div>';
+  html += '</div>';
+
+  // Session tabs
+  html += '<div class="stabs">';
+  for (var i=0; i<sem.seances.length; i++) {
+    var sf = seqFull(s,i);
+    var sa = q===i;
+    var sc = "stab"+(sa?" sactive":"")+(sf&&!sa?" sdone":"");
+    html += '<button class="'+sc+'" onclick="selSeq('+i+')">'+(sf?"&#10003; ":"")+sem.seances[i].label+'</button>';
+  }
+  html += '</div>';
+
+  // Cards
+  html += '<div class="cards">';
+  for (var i=0; i<seance.exos.length; i++) {
+    var entry = seance.exos[i];
+    var ex = EXOS[entry.e];
+    var k = ck(s,q,entry.e);
+    var done = isDone(s,q,entry.e);
+    var open = openCard === k;
+    var bc = open ? ex.border : (done ? "#43A04750" : "#ffffff12");
+
+    var tags = "";
+    for (var t=0; t<ex.muscles.length; t++) {
+      tags += '<span class="tag" style="background:'+ex.bg+';color:'+ex.tc+';border:1px solid '+ex.border+'35">'+ex.muscles[t]+'</span>';
+    }
+
+    html += '<div class="card'+(done?" done":"")+'" style="border-color:'+bc+'">';
+    html += '<div class="card-head" onclick="toggleCard(\''+k+'\' )">';
+    html += '<div class="cdot" style="background:'+ex.dot+'"></div>';
+    html += '<div class="cinfo">';
+    html += '<div class="ctitle"><span class="cname">'+ex.nom+'</span><span class="csub">'+ex.sub+'</span>';
+    html += '<span class="clvl" style="background:'+ex.nBg+';color:'+ex.nC+'">'+ex.niv.toUpperCase()+'</span></div>';
+    html += '<div class="cmeta"><span>'+entry.s+'</span><span>'+entry.r+'</span><span>'+entry.p+'</span></div>';
+    html += '</div>';
+    html += '<div class="cactions">';
+    html += '<button class="checkbtn'+(done?" checked":"")+'" onclick="event.stopPropagation();toggleCheck(\''+k+'\')">'+(done?"&#10003;":"")+'</button>';
+    html += '<span class="arrow'+(open?" open":"")+'">&#8595;</span>';
+    html += '</div></div>';
+
+    if (open) {
+      html += '<div class="card-body open">';
+      html += '<div class="tags">'+tags+'</div>';
+      html += '<p class="cdesc">'+ex.desc+'</p>';
+      html += '<div class="tip-box"><span class="tip-label">ASTUCE &mdash; </span><span class="tip-text">'+ex.tip+'</span></div>';
+      html += '<div class="warn-box"><span class="warn-label">ATTENTION &mdash; </span><span class="warn-text">'+ex.warn+'</span></div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Done banner
+  var sdf = seqFull(s,q);
+  var hasNextSeq = q+1 < sem.seances.length;
+  var hasNextSem = s+1 < SEMAINES.length;
+  html += '<div class="done-banner'+(sdf?" show":"")+'">';
+  html += '<div class="banner-icon">&#127881;</div>';
+  html += '<div class="banner-title">Seance completee !</div>';
+  if (sdf) {
+    if (hasNextSeq) {
+      html += '<div class="banner-sub">Prochaine : Seance '+sem.seances[q+1].label+'</div>';
+      html += '<button class="next-btn" onclick="selSeq('+(q+1)+')">Seance suivante &rarr;</button>';
+    } else if (semFull(s) && hasNextSem) {
+      html += '<div class="banner-sub">Semaine '+sem.num+' terminee !</div>';
+      html += '<button class="next-btn" onclick="selSem('+(s+1)+')">Semaine '+SEMAINES[s+1].num+' : '+SEMAINES[s+1].label+' &rarr;</button>';
+    } else if (semFull(s) && !hasNextSem) {
+      html += '<div class="banner-sub" style="color:#66cc77;font-size:16px">Programme complet ! Felicitations ! &#127942;</div>';
+    }
+  }
+  html += '</div>';
+
+  document.getElementById("content").innerHTML = html;
+}
+
+function selSem(i) {
+  state.sem = i; state.seq = 0; openCard = null;
+  saveState(); render();
+  document.getElementById("content").scrollIntoView({behavior:"smooth"});
+}
+
+function selSeq(i) {
+  state.seq = i; openCard = null;
+  saveState(); render();
+}
+
+function toggleCard(k) {
+  openCard = openCard===k ? null : k;
+  renderContent();
+}
+
+function toggleCheck(k) {
+  state.completed[k] = !state.completed[k];
+  saveState(); render();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadState();
+render();
+</script>
+</body>
+</html>
